@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.0/css/all.min.css"
+    />
+    <link rel="shortcut icon" href="./calculator.png" type="image/x-icon" />
+    <style>
+      .grid-cell {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        border-radius: 0.2rem;
+        font-size: 1.1rem;
+        transition: 0.05s;
+        cursor: pointer;
+      }
+      .grid-cell:hover {
+        opacity: 70%;
+      }
+      .sub-cell {
+        background-color: rgb(59, 59, 59);
+      }
+      .grid-cell:last-child {
+        background-color: rgba(49, 142, 248, 0.925);
+      }
+    </style>
+  </head>
+  <body>
+    <section class="w-screen md:w-3/4 h-screen bg-black/90 flex flex-col">
+      <div class="h-[calc(100%-75%)] w-full p-2">
+        <h2 class="text-white text-xs">Simple Caculator by Nyan Min Htet</h2>
+        <div class="p-2 space-y-3 mt-4">
+          <p id="result" class="text-white text-right"></p>
+          <p id="input" class="text-4xl text-white font-bold text-right p-2">0</p>
+        </div>
+      </div>
+      <div class="flex-1 p-2">
+        <div
+          class="grid grid-rows-5 grid-cols-4 h-full [&>div:nth-child(4n)]:bg-neutral-800 gap-1 [&>div:nth-child(-n+3)]:bg-neutral-800"
+        >
+          <div class="grid-cell operator"">%
+            <input type="hidden" value="%">
+          </div>
+          <div onclick="clearInput()" class="grid-cell">C</div>
+          <div onclick="removeLastIndex()" class="grid-cell"><i class="fa-solid fa-delete-left"></i></div>
+          <div class="grid-cell operator ">
+            <input type="hidden" value="/" />
+            <i class="fa-solid fa-divide "></i>
+          </div>
+          <div class="grid-cell num sub-cell">7</div>
+          <div class="grid-cell num sub-cell">8</div>
+          <div class="grid-cell num sub-cell">9</div>
+          <div class="grid-cell operator">
+            <input type="hidden" value="*" />
+            <i class="fa-solid fa-xmark"></i>
+          </div>
+          <div class="grid-cell num sub-cell">4</div>
+          <div class="grid-cell num sub-cell">5</div>
+          <div class="grid-cell num sub-cell">6</div>
+          <div class="grid-cell operator">
+            <i class="fa-solid fa-minus"></i>
+            <input type="hidden" value="-" />
+          </div>
+          <div class="grid-cell num sub-cell">1</div>
+          <div class="grid-cell num sub-cell">2</div>
+          <div class="grid-cell num sub-cell">3</div>
+          <div class="grid-cell operator">
+            <input type="hidden" value="+" />
+            <i class="fa-solid fa-plus"></i>
+          </div>
+          <div class="grid-cell num sub-cell">00</div>
+          <div class="grid-cell num sub-cell">0</div>
+          <div onclick="dot()" class="grid-cell sub-cell">.</div>
+          <input type="hidden" id="dot" value=".">
+          <div onclick="calculation()" class="grid-cell">
+            <i class="fa-solid fa-equals"></i>
+          </div>
+        </div>
+      </div>
+    </section>
+  </body>
+  <script>
+    let flag = true;
+    let theFirstOperand = "";
+    let currentInput = "";
+    let operator = null;
+    let isDotExist = false;
+    let inputBox = document.getElementById("input");
+    let resultBox = document.getElementById("result");
+    let dotOperator = document.querySelector('#dot').value;
+    let isExecuted = false;
+
+    function dot(){
+      if(!isDotExist){
+        if (!currentInput) {
+        inputBox.innerHTML += "0";
+      }
+        inputBox.innerHTML += dotOperator;
+        currentInput += dotOperator;
+        isDotExist = true;
+      }
+    }
+
+    document.querySelectorAll(".num").forEach((current) => {
+      current.onclick = () => {
+        if (!flag) {
+          currentInput = "";
+          changeFlag('dot', true);
+        }
+        if (inputBox.innerHTML == "0") {
+          inputBox.innerHTML = current.innerHTML;
+        } else {
+          inputBox.innerHTML += current.innerHTML;
+        }
+        currentInput += current.innerHTML;
+      };
+    });
+    
+    document.querySelectorAll(".operator").forEach((event) => {
+      event.onclick = () => {
+        if (flag) {
+          inputBox.innerHTML += ` ${event.querySelector("input").value} `;
+          operator = event.querySelector("input").value;
+          if (!theFirstOperand) {
+            theFirstOperand = currentInput;
+            currentInput = "";
+          }
+          isDotExist = false;
+          changeFlag('flag', false);
+        }
+      };
+    });
+    function removeLastIndex(){
+
+  let display = inputBox.innerHTML;
+  
+  if (display.slice(-1) === ' ') {
+    display = display.slice(0, -3);
+    operator = null;
+    flag = true;
+    currentInput = theFirstOperand;
+    theFirstOperand = "";
+  } else {
+    display = display.slice(0, -1);
+    currentInput = currentInput.slice(0, -1);
+  }
+  isDotExist = currentInput.includes('.');
+  
+  inputBox.innerHTML = display === "" ? "0" : display;
+}
+    function checkInput(){
+      let clearDot = currentInput.search(/\./)
+      if (clearDot === -1) {
+        isDotExist = false;
+      }
+
+    }
+    function clearInput() {
+      theFirstOperand = "";
+      currentInput = "";
+      resultBox.innerHTML = "";
+      inputBox.innerHTML = 0;
+      operator = null;
+      flag = true;
+    }
+    function changeFlag(type, boolean) {
+  if (type === 'flag') {
+    flag = boolean; 
+  } else if (type === 'dot') {
+    isDotExist = boolean; 
+  }
+}
+    function calculate(num1, op, num2) {
+  const n1 = parseFloat(num1);
+  const n2 = parseFloat(num2);
+  
+  if (op === '+') return n1 + n2;
+  if (op === '-') return n1 - n2;
+  if (op === '*') return n1 * n2;
+  if (op === '/') return n1 / n2;
+  if (op === '%') return n1 % n2;
+  
+  return n2; 
+
+    }
+function calculation() {
+  if (currentInput && theFirstOperand && operator) {
+    let result = calculate(theFirstOperand, operator, currentInput);
+    resultBox.innerHTML = result.toFixed(2); 
+   
+    inputBox.innerHTML = result;
+    theFirstOperand = result.toString();
+    currentInput = result.toString();
+    operator = null;
+    flag = true; 
+    isDotExist = theFirstOperand.includes('.');
+  }
+}
+  </script>
+</html>
