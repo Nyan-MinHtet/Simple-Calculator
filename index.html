@@ -139,7 +139,7 @@
 <p class="mt-5 font-bold text-gray-700">Author - Nyan Min Htet</p>
     </section>
   </body>
-  <script>
+<script>
     let flag = true;
     let theFirstOperand = "";
     let currentInput = "";
@@ -148,113 +148,117 @@
     let inputBox = document.getElementById("input");
     let resultBox = document.getElementById("result");
     let dotOperator = document.querySelector('#dot').value;
-    let isExecuted = false;
 
-    function dot(){
-      if(!isDotExist){
-        if (!currentInput) {
-        inputBox.innerHTML += "0";
-      }
-        inputBox.innerHTML += dotOperator;
-        currentInput += dotOperator;
-        isDotExist = true;
-      }
+    function dot() {
+        if (!isDotExist) {
+            if (currentInput === "") {
+                currentInput = "0.";
+                inputBox.innerHTML = "0.";
+            } else {
+                currentInput += dotOperator;
+                inputBox.innerHTML += dotOperator;
+            }
+            isDotExist = true;
+        }
     }
 
     document.querySelectorAll(".num").forEach((current) => {
-      current.onclick = () => {
-        if (!flag) {
-          currentInput = "";
-          changeFlag('dot', true);
-        }
-        if (inputBox.innerHTML == "0") {
-          inputBox.innerHTML = current.innerHTML;
-        } else {
-          inputBox.innerHTML += current.innerHTML;
-        }
-        currentInput += current.innerHTML;
-      };
+        current.onclick = () => {
+            if (!flag) {
+                inputBox.innerHTML = "";
+                currentInput = "";
+                isDotExist = false;
+                flag = true;
+            }
+
+            if (inputBox.innerHTML === "0" && current.innerHTML !== "00") {
+                inputBox.innerHTML = current.innerHTML;
+                currentInput = current.innerHTML;
+            } else {
+                inputBox.innerHTML += current.innerHTML;
+                currentInput += current.innerHTML;
+            }
+        };
     });
-    
+
     document.querySelectorAll(".operator").forEach((event) => {
-      event.onclick = () => {
-        if (flag) {
-          inputBox.innerHTML += ` ${event.querySelector("input").value} `;
-          operator = event.querySelector("input").value;
-          if (!theFirstOperand) {
-            theFirstOperand = currentInput;
-            currentInput = "";
-          }
-          isDotExist = false;
-          changeFlag('flag', false);
-        }
-      };
+        event.onclick = () => {
+            if (flag && currentInput !== "") {
+                if (theFirstOperand && operator) {
+                    calculation();
+                }
+                operator = event.querySelector("input").value;
+                theFirstOperand = currentInput;
+                resultBox.innerHTML = `${theFirstOperand} ${operator}`;
+                inputBox.innerHTML = "0";
+                flag = false;
+                isDotExist = false;
+            }
+        };
     });
-    function removeLastIndex(){
 
-  let display = inputBox.innerHTML;
-  
-  if (display.slice(-1) === ' ') {
-    display = display.slice(0, -3);
-    operator = null;
-    flag = true;
-    currentInput = theFirstOperand;
-    theFirstOperand = "";
-  } else {
-    display = display.slice(0, -1);
-    currentInput = currentInput.slice(0, -1);
-  }
-  isDotExist = currentInput.includes('.');
-  
-  inputBox.innerHTML = display === "" ? "0" : display;
-}
-    function checkInput(){
-      let clearDot = currentInput.search(/\./)
-      if (clearDot === -1) {
-        isDotExist = false;
-      }
-
+    function removeLastIndex() {
+        let display = inputBox.innerHTML;
+        
+        if (display.length > 1) {
+            display = display.slice(0, -1);
+            currentInput = currentInput.slice(0, -1);
+        } else {
+            display = "0";
+            currentInput = "";
+        }
+        
+        isDotExist = currentInput.includes('.');
+        inputBox.innerHTML = display;
     }
+
     function clearInput() {
-      theFirstOperand = "";
-      currentInput = "";
-      resultBox.innerHTML = "";
-      inputBox.innerHTML = 0;
-      operator = null;
-      flag = true;
+        theFirstOperand = "";
+        currentInput = "";
+        resultBox.innerHTML = "";
+        inputBox.innerHTML = "0";
+        operator = null;
+        flag = true;
+        isDotExist = false;
     }
-    function changeFlag(type, boolean) {
-  if (type === 'flag') {
-    flag = boolean; 
-  } else if (type === 'dot') {
-    isDotExist = boolean; 
-  }
-}
-    function calculate(num1, op, num2) {
-  const n1 = parseFloat(num1);
-  const n2 = parseFloat(num2);
-  
-  if (op === '+') return n1 + n2;
-  if (op === '-') return n1 - n2;
-  if (op === '*') return n1 * n2;
-  if (op === '/') return n1 / n2;
-  if (op === '%') return n1 % n2;
-  
-  return n2; 
+    
+    function formatResult(num) {
+        if (num % 1 !== 0) {
+            return parseFloat(num.toFixed(4));
+        }
+        return num;
+    }
 
+    function calculate(num1, operator, num2) {
+        const n1 = parseFloat(num1);
+        const n2 = parseFloat(num2);
+
+        if (operator === '+') return n1 + n2;
+        if (operator === '-') return n1 - n2;
+        if (operator === '*') return n1 * n2;
+        if (operator === '/') {
+            if (n2 === 0) return "Error"; 
+            return n1 / n2;
+        }
+        if (operator === '%') return n1 % n2;
+
+        return n2;
     }
-function calculation() {
-  if (currentInput && theFirstOperand && operator) {
-    let result = calculate(theFirstOperand, operator, currentInput);
-    resultBox.innerHTML = result.toFixed(2); 
-   
-    inputBox.innerHTML = result;
-    theFirstOperand = result.toString();
-    currentInput = result.toString();
-    operator = null;
-    flag = true; 
-    isDotExist = theFirstOperand.includes('.');
-  }
-}
-  </script>
+
+    function calculation() {
+        if (currentInput && theFirstOperand && operator) {
+            let result = calculate(theFirstOperand, operator, currentInput);
+            resultBox.innerHTML = `${theFirstOperand} ${operator} ${currentInput} =`;
+
+            let formattedResult = formatResult(result);
+            inputBox.innerHTML = formattedResult;
+            
+            theFirstOperand = formattedResult.toString();
+            currentInput = formattedResult.toString();
+            operator = null;
+            flag = true;
+            isDotExist = theFirstOperand.includes('.');
+        }
+    }
+</script>
 </html>
